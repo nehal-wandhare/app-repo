@@ -23,21 +23,25 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-    # 🔹 4. Snyk (SCA)
-    # 🔹 Install Python dependencies
+      # 🔹 Install Snyk CLI
+    - name: Install Snyk
+      run: npm install -g snyk
+
+# 🔹 Install Python dependencies
     - name: Install Dependencies
       run: |
        cd vote
        pip install -r requirements.txt
 
-# 🔹 Snyk Scan (SCA)
+# 🔹 Authenticate Snyk
+    - name: Snyk Auth
+      run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
+# 🔹 Snyk Test (SCA)
     - name: Snyk Test
-      uses: snyk/actions/python@master
-      with:
-       command: test
-       args: --file=vote/requirements.txt
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} 
+      run: |
+       cd vote
+       snyk test --file=requirements.txt  
       # 🔹 5. Build Docker Image
     - name: Build Docker Image
       run: |

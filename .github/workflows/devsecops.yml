@@ -25,12 +25,12 @@ jobs:
 
     # 🔹 4. Snyk (SCA)
     - name: Snyk Test
-      run: |
-       pip install -r vote/requirements.txt
-       snyk test --file=vote/requirements.txt
+      uses: snyk/actions/python@master
+      with:
+       command: test
+       args: --file=vote/requirements.txt
       env:
        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
     # 🔹 5. Build Docker Image
     - name: Build Docker Image
       run: |
@@ -60,7 +60,7 @@ jobs:
     # 🔹 9. Update Manifest Repo (GitOps)
     - name: Update Manifest Repo
       run: |
-        git clone https://github.com/YOUR_USERNAME/manifest-repo.git
+        git clone https://github.com/nehal-wandhare/manifest-repo.git
         cd manifest-repo
         sed -i "s|image:.*|image: nehalwandhare/vote:${{ github.sha }}|g" deployment.yaml
         git config user.name "github-actions"

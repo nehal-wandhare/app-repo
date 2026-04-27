@@ -1,10 +1,9 @@
 app:
   applicationId: abcf9626-87f1-4186-b63d-e30b8889c6b9
   env: Development
-
-hawk:
   host: http://af928340456134e9e83cf0fea34654f5-1043685563.eu-north-1.elb.amazonaws.com
 
+hawk:
   spider:
     base: true
 

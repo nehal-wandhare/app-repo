@@ -71,13 +71,17 @@ jobs:
     # 🔹 9. Update Manifest Repo (GitOps)
     - name: Update Manifest Repo
       run: |
-        git clone https://github.com/nehal-wandhare/manifest-repo.git
-        cd manifest-repo
-        sed -i "s|image:.*|image: nehalwandhare/vote:${{ github.sha }}|g" deployment.yaml
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
-        git commit -am "Update image to ${{ github.sha }}"
-        git push
+       git clone https://${{ secrets.GH_TOKEN }}@github.com/nehal-wandhare/manifest-repo.git
+       cd manifest-repo
+
+       sed -i "s|image:.*|image: nehalwandhare/vote:${{ github.sha }}|g" deployment.yaml
+
+       git config user.name "github-actions"
+       git config user.email "actions@github.com"
+
+       git add .
+       git commit -m "Update image to ${{ github.sha }}"
+       git push
 
     # 🔹 10. Wait for Deployment (IMPORTANT for DAST)
     - name: Wait for App to be Live

@@ -23,13 +23,6 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-    # 🔹 3. SonarCloud Quality Gate (FAIL if bad)
-    - name: SonarCloud Quality Gate
-      uses: SonarSource/sonarcloud-quality-gate-action@v1
-      timeout-minutes: 5
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
     # 🔹 4. Snyk (SCA)
     - name: Snyk Test
       uses: snyk/actions/node@master

@@ -1,0 +1,12 @@
+app:
+  applicationId: your-app-id
+  env: dev
+
+hawk:
+  host: http://af928340456134e9e83cf0fea34654f5-1043685563.eu-north-1.elb.amazonaws.com
+
+  spider:
+    base: true
+
+  scan:
+    maxDurationMinutes: 5

@@ -1,0 +1,85 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  devsecops:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    # 🔹 1. Checkout Code
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # 🔹 2. SonarCloud (SAST)
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@v2
+      with:
+        projectBaseDir: .
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    # 🔹 3. SonarCloud Quality Gate (FAIL if bad)
+    - name: SonarCloud Quality Gate
+      uses: SonarSource/sonarcloud-quality-gate-action@v1
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    # 🔹 4. Snyk (SCA)
+    - name: Snyk Test
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+    # 🔹 5. Build Docker Image
+    - name: Build Docker Image
+      run: |
+        docker build -t nehalwandhare/vote:${{ github.sha }} ./vote
+
+    # 🔹 6. Trivy Scan (FAIL on CRITICAL/HIGH)
+    - name: Trivy Scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: nehalwandhare/vote:${{ github.sha }}
+        format: table
+        exit-code: 1
+        severity: CRITICAL,HIGH
+
+    # 🔹 7. Docker Login
+    - name: Docker Login
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # 🔹 8. Push Image
+    - name: Push Image
+      run: |
+        docker push nehalwandhare/vote:${{ github.sha }}
+
+    # 🔹 9. Update Manifest Repo (GitOps)
+    - name: Update Manifest Repo
+      run: |
+        git clone https://github.com/YOUR_USERNAME/manifest-repo.git
+        cd manifest-repo
+        sed -i "s|image:.*|image: nehalwandhare/vote:${{ github.sha }}|g" deployment.yaml
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git commit -am "Update image to ${{ github.sha }}"
+        git push
+
+    # 🔹 10. Wait for Deployment (IMPORTANT for DAST)
+    - name: Wait for App to be Live
+      run: sleep 60
+
+    # 🔹 11. StackHawk (DAST)
+    - name: StackHawk DAST Scan
+      uses: stackhawk/hawkscan-action@v2
+      with:
+        apiKey: ${{ secrets.HAWK_API_KEY }}
+        configurationFiles: stackhawk.yml

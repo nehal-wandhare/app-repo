@@ -25,9 +25,11 @@ jobs:
 
     # 🔹 4. Snyk (SCA)
     - name: Snyk Test
-      uses: snyk/actions/node@master
+      run: |
+       pip install -r vote/requirements.txt
+       snyk test --file=vote/requirements.txt
       env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
     # 🔹 5. Build Docker Image
     - name: Build Docker Image
